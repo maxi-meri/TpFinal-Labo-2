@@ -225,6 +225,7 @@ sonido_disparo = pygame.mixer.Sound("assets//sounds//Gunshot.wav")
 
 
 mostrar_inicio = True
+pausa = False
 run = True
 while run:
     if mostrar_inicio:
@@ -245,6 +246,20 @@ while run:
         reloj = pygame.time.Clock()
 
         window.fill(consts.BLUE)
+
+        if pausa:
+                texto_pausa = font.render("Juego pausado", True, consts.AMARILLO)    
+                text_rect = texto_pausa.get_rect(center =(consts.ANCHO_VENTANA / 2, consts.ALTO_VENTANA / 2))
+                window.blit(texto_pausa, text_rect)
+                
+                pygame.display.update()
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        run = False
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_p:
+                            pausa = False
+                continue
 
         if player.vivo:
                 
@@ -356,6 +371,15 @@ while run:
                     mover_arriba = True
                 if event.key == pygame.K_s:
                     mover_abajo = True
+                if event.key == pygame.K_e:
+                    if world.abrir_puerta(player, tile_list):
+                        print("Puerta abierta")
+                if event.key == pygame.K_p:
+                    pausa = not pausa
+                    mover_abajo = False
+                    mover_arriba = False
+                    mover_izquierda = False
+                    mover_derecha = False
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     mover_izquierda = False
@@ -365,9 +389,6 @@ while run:
                     mover_arriba = False
                 if event.key == pygame.K_s:
                     mover_abajo = False
-                if event.key == pygame.K_e:
-                    if world.abrir_puerta(player, tile_list):
-                        print("Puerta abierta")
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                     player.vivo = True
@@ -389,8 +410,7 @@ while run:
                         lista_enemigos.append(enemies)
                     for item in world.lista_item:
                         grupo_items.add(item)
-
-
+            
         pygame.display.update()
 
 
