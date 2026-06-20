@@ -198,7 +198,6 @@ mover_derecha = False
 #Control Frame Rates
 reloj = pygame.time.Clock()
 
-
 boton_reinicio = pygame.Rect(consts.ANCHO_VENTANA / 2 - 100, consts.ALTO_VENTANA / 2 + 100, 200, 50)
 
 run = True
@@ -335,7 +334,7 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                 player.vivo = True
-                player.enemigos = 100
+                player.energia = 100
                 player.score = 0
                 nivel = 1
                 world_data = resetear_mundo()
