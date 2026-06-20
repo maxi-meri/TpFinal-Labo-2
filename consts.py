@@ -8,7 +8,7 @@ TILE_SIZE = 48
 FILAS = 25
 COLUMNAS = 35
 LIMITE_PANTALLA = 150
-COORDENADAS = {"1" : (160, 160), "2" : (90, 380), "3" : (300, 350)}
+COORDENADAS = {"1" : (160, 160), "2" : (90, 380), "3" : (1000, 1000)}
 MAX_LVL = 3
 
 #Corazones

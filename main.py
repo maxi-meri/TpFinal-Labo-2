@@ -33,6 +33,7 @@ pygame.display.set_caption("Mi primer juego")
 
 posicion_pantalla = [0, 0]
 nivel = 1
+start_time = pygame.time.get_ticks()
 
 #Fonts
 font = pygame.font.Font("assets//fonts//Minecraft.ttf", consts.FONT_SIZE)
@@ -247,6 +248,15 @@ while run:
 
         window.fill(consts.BLUE)
 
+        #Tiempo
+        current_time = pygame.time.get_ticks()
+        elapsed_time = (current_time - start_time) // 1000
+        minutos = elapsed_time // 60
+        segundos = elapsed_time % 60
+        time_text_font = font.render(f"Tiempo: {minutos:02d}:{segundos:02d}", True, consts.BLANCO)
+        time_text = time_text_font.get_rect(center =(consts.ANCHO_VENTANA / 2 + 35, 45))
+        
+
         if pausa:
                 texto_pausa = font.render("Juego pausado", True, consts.AMARILLO)    
                 text_rect = texto_pausa.get_rect(center =(consts.ANCHO_VENTANA / 2, consts.ALTO_VENTANA / 2))
@@ -285,6 +295,9 @@ while run:
 
             #Corazones
             vida_player()
+
+            #Tiempo
+            window.blit(time_text_font, time_text)
 
             #Jugador
             posicion_pantalla, nivel_completado = player.movimiento(delta_x, delta_y, world.obstaculos_tiles, world.exit_tile)
