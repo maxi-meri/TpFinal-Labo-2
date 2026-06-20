@@ -3,7 +3,7 @@ import pygame
 from items import Item
 from character import Personaje
 
-obstaculos = [16, 17, 31, 32, 33, 46, 47, 48, 140, 163, 178]
+obstaculos = [16, 17, 18, 31, 32, 33, 46, 47, 48, 140, 163, 178]
 puerta_cerrada = [163, 178]
 
 class World():
