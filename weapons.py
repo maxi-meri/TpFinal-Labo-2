@@ -14,7 +14,7 @@ class Weapon():
         self.last_shoot = pygame.time.get_ticks()
 
     def update(self, personaje):
-        cooldown= consts.COOLDOWN_BULLETS
+        cooldown= personaje.cooldown_disparo
         bala = None
         self.shape.center = personaje.shape.center
         if personaje.flip == False:
@@ -32,7 +32,7 @@ class Weapon():
 
         #Detectar Click Mouse
         if pygame.mouse.get_pressed()[0] and self.shoot == False and (pygame.time.get_ticks() - self.last_shoot >= cooldown):
-            bala = Bullet(self.imagen_bala, self.shape.centerx, self.shape.centery, self.angulo)
+            bala = Bullet(self.imagen_bala, self.shape.centerx, self.shape.centery, self.angulo, personaje.daño)
             self.shoot = True
             self.last_shoot = pygame.time.get_ticks()
 
@@ -56,13 +56,14 @@ class Weapon():
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, angle):
+    def __init__(self, image, x, y, angle, daño):
         pygame.sprite.Sprite.__init__(self)
         self.imagen_original = image
         self.angle = angle
         self.image = pygame.transform.rotate(self.imagen_original, self.angle)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.daño = daño
 
         #Velocidad Bala
         self.delta_x = math.cos(math.radians(self.angle)) * consts.VELOCIDAD_BULLET
@@ -81,7 +82,7 @@ class Bullet(pygame.sprite.Sprite):
         #Colision Enemigos
         for enemigo in lista_enemigos:
             if enemigo.shape.colliderect(self.rect):
-                dmg = 15 + random.randint(-7, 7)
+                dmg = self.daño + random.randint(-7, 7)
                 pos_dmg = enemigo.shape
                 enemigo.energia = enemigo.energia - dmg
                 self.kill()

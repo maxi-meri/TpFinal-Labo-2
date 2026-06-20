@@ -17,6 +17,13 @@ class Personaje():
         self.tipo = tipo
         self.hit = False
         self.last_hit = pygame.time.get_ticks()
+        self.exp = 0
+        self.exp_max = 10
+        self.nivel = 1
+        self.daño = 40
+        self.velocidad = consts.VELOCIDAD_PERSONAJE
+        self.cooldown_disparo = consts.COOLDOWN_BULLETS
+        self.escudo = 0
 
 
     def update(self):
@@ -126,6 +133,12 @@ class Personaje():
 
         #Ataque
         if agro < consts.ATK_RANGE and player.hit == False:
-            player.energia -= 10
+            if player.escudo > 0:
+                player.escudo -= 10
+
+                if player.escudo < 0:
+                    player.escudo = 0
+            else:
+                player.energia -= 10
             player.hit = True
             player.last_hit = pygame.time.get_ticks()

@@ -2,11 +2,19 @@ import pygame
 import consts
 import os
 import csv
+import random
+
 from character import Personaje
 from weapons import Weapon
 from textos import DamageText
 from items import Item
 from world import World
+from shooting_enemies import EnemigoDisparo
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def ruta(*partes):
+    return os.path.join(BASE_DIR, *partes)
 
 #Funciones
 #Escalar Imagenes
@@ -32,72 +40,79 @@ pygame.display.set_caption("Mi primer juego")
 posicion_pantalla = [0, 0]
 nivel = 1
 
+#rondas
+ronda = 1
+MAX_RONDAS = 10
+ronda_terminada = False
+
 #Fonts
-font = pygame.font.Font("assets//fonts//Minecraft.ttf", consts.FONT_SIZE)
-font_game_over = pygame.font.Font("assets//fonts//BLOODY.TTF", consts.FONT_SIZE*3)
-font_reinicio = pygame.font.Font("assets//fonts//Minecraft.ttf", consts.FONT_SIZE)
+font = pygame.font.Font(ruta("assets", "fonts", "Minecraft.ttf"), consts.FONT_SIZE)
+font_game_over = pygame.font.Font(ruta("assets", "fonts", "BLOODY.TTF"), consts.FONT_SIZE * 3)
+font_reinicio = pygame.font.Font(ruta("assets", "fonts", "Minecraft.ttf"), consts.FONT_SIZE)
 
 game_over_text = font_game_over.render("Game Over", True, consts.BLANCO)
 texto_boton_reinicio = font_reinicio.render("Reiniciar", True, consts.NEGRO)
 
 #Importar Imgs
 #Energia
-corazon_vacio = pygame.image.load("assets//images//items//hp_empty.png")
+corazon_vacio = pygame.image.load(ruta("assets", "images", "items", "hp_empty.png"))
 corazon_vacio = escalar_img(corazon_vacio, consts.ESCALA_CORAZONES)
-corazon_mitad = pygame.image.load("assets//images//items//hp_half.png")
+corazon_mitad = pygame.image.load(ruta("assets", "images", "items", "hp_half.png"))
 corazon_mitad = escalar_img(corazon_mitad, consts.ESCALA_CORAZONES)
-corazon_full = pygame.image.load("assets//images//items//hp_full.png")
+corazon_full = pygame.image.load(ruta("assets", "images", "items", "hp_full.png"))
 corazon_full = escalar_img(corazon_full, consts.ESCALA_CORAZONES)
 
 #Personaje
 animations = []
 for i in range(7):
-    img = pygame.image.load(f"assets//images//characters//player//Player_{i}.png").convert_alpha()
+    img = pygame.image.load(ruta("assets", "images", "characters", "player", f"Player_{i}.png")).convert_alpha()
     img = escalar_img(img, consts.ESCALA_PERSONAJE)
     animations.append(img)
 
 #Enemigos
-directorio_enemigos = "assets//images//characters//enemies"
+directorio_enemigos = ruta("assets", "images", "characters", "enemies")
 tipo_enemigos = nombre_carpetas(directorio_enemigos)
 animations_enemies = []
 
 for enemies in tipo_enemigos:
     list_temp = []
-    ruta_temp = f"assets//images//characters//enemies//{enemies}"
+    ruta_temp = ruta("assets", "images", "characters", "enemies", enemies)
     num_animations = contar_elementos(ruta_temp)
     
     for i in range(num_animations):
-        img_enemigo = pygame.image.load(f"{ruta_temp}//{enemies}_{i}.png").convert_alpha()
+        img_enemigo = pygame.image.load(ruta_temp + f"/{enemies}_{i}.png").convert_alpha()
         img_enemigo = escalar_img(img_enemigo, consts.ESCALA_ENEMIGOS)
         list_temp.append(img_enemigo)
     animations_enemies.append(list_temp)
 
 
 #Arma
-imagen_pistola = pygame.image.load("assets//images//weapons//gun.png").convert_alpha()
+imagen_pistola = pygame.image.load(ruta("assets", "images", "weapons", "gun.png")).convert_alpha()
 imagen_pistola = escalar_img(imagen_pistola, consts.ESCALA_ARMA)
 
 #Balas
-imagen_balas = pygame.image.load("assets//images//weapons//bullet.png").convert_alpha()
+imagen_balas = pygame.image.load(
+    ruta("assets", "images", "weapons", "bullet.png")
+).convert_alpha()
 imagen_balas = escalar_img(imagen_balas, consts.ESCALA_ARMA)
 
 #BG
 tile_list = []
 for x in range(270):#270
-    tile_image = pygame.image.load(f"assets//images//tiles//tile ({x + 1}).png")
+    tile_image = pygame.image.load(ruta("assets", "images", "tiles", f"tile ({x + 1}).png"))
     tile_image = pygame.transform.scale(tile_image, (consts.TILE_SIZE, consts.TILE_SIZE))
     tile_list.append(tile_image)
 
 #Items
 #Posion
-imagen_posion = pygame.image.load("assets//images//items//potion.png")
+imagen_posion = pygame.image.load(ruta("assets", "images", "items", "potion.png"))
 imagen_posion = escalar_img(imagen_posion, consts.ESCALA_POSION)
 #Monedas
 coin_images = []
-ruta_img = "assets//images//items//coin"
+ruta_img = ruta("assets", "images", "items", "coin")
 num_coin_img = contar_elementos(ruta_img)
 for i in range(num_coin_img):
-    img = pygame.image.load(f"assets//images//items//coin//coin_{i}.png")
+    img = pygame.image.load(ruta("assets", "images", "items", "coin", f"coin_{i}.png"))
     img = escalar_img(img, consts.ESCALA_MONEDAS)
     coin_images.append(img)
 
@@ -139,7 +154,7 @@ for fila in range(consts.FILAS):
     world_data.append(filas)
 
 #Carga de nivel
-with open("niveles//nivel_1.csv", newline= '') as csvfile:
+with open(ruta("niveles", "nivel_1.csv"), newline='') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     for x, fila in enumerate(reader):
         for y, columna in enumerate(fila):
@@ -177,6 +192,7 @@ pistola = Weapon(imagen_pistola, imagen_balas)
 grupo_balas = pygame.sprite.Group()
 grupo_dmg_text = pygame.sprite.Group()
 grupo_items = pygame.sprite.Group()
+grupo_balas_enemigas = pygame.sprite.Group()
 #Items desde la data del nivel
 for item in world.lista_item:
     grupo_items.add(item)
@@ -201,6 +217,22 @@ reloj = pygame.time.Clock()
 
 boton_reinicio = pygame.Rect(consts.ANCHO_VENTANA / 2 - 100, consts.ALTO_VENTANA / 2 + 100, 200, 50)
 
+estado = "jugando"
+
+def generar_enemigos_ronda(cantidad):
+    for i in range(cantidad):
+        x = random.randint(200, consts.ANCHO_VENTANA - 200)
+        y = random.randint(150, consts.ALTO_VENTANA - 150)
+
+        numero = random.randint(1, 100)
+
+        if numero <= 66:
+            enemigo = Personaje(x, y, animations_enemies[0], 100 + ronda * 20, 2)
+        else:
+            enemigo = EnemigoDisparo(x, y, animations_enemies[1], 80 + ronda * 15, 3)
+
+        lista_enemigos.append(enemigo)
+
 run = True
 while run:
     #FPS
@@ -211,7 +243,7 @@ while run:
 
     window.fill(consts.BLUE)
 
-    if player.vivo:
+    if player.vivo and estado == "jugando": 
             
         #dibujar_grid()
 
@@ -220,13 +252,13 @@ while run:
         delta_y = 0
 
         if mover_derecha == True:
-            delta_x = consts.VELOCIDAD_PERSONAJE
+            delta_x = player.velocidad
         if mover_izquierda == True:
-            delta_x = -consts.VELOCIDAD_PERSONAJE
+            delta_x = -player.velocidad
         if mover_arriba == True:
-            delta_y = -consts.VELOCIDAD_PERSONAJE
+            delta_y = -player.velocidad
         if mover_abajo == True:
-            delta_y = consts.VELOCIDAD_PERSONAJE
+            delta_y = player.velocidad
 
 
         #BG
@@ -242,13 +274,32 @@ while run:
         player.dibujo(window)
 
         #Enemigos
-        for enemies in lista_enemigos:
-            if enemies.energia == 0:
+        for enemies in lista_enemigos[:]:
+            if enemies.energia <= 0:
+                player.exp += 1
+                if random.randint(1, 100) <= 10:
+                    escudo = Item(enemies.shape.centerx, enemies.shape.centery, 2, [])
+                    grupo_items.add(escudo)
+
                 lista_enemigos.remove(enemies)
             if enemies.energia > 0:
-                enemies.enemigos(player, world.obstaculos_tiles, posicion_pantalla, world.exit_tile)
+
+                if isinstance(enemies, EnemigoDisparo):
+                    enemies.enemigos(player, world.obstaculos_tiles, posicion_pantalla, world.exit_tile, grupo_balas_enemigas)
+                else:
+                    enemies.enemigos(player, world.obstaculos_tiles, posicion_pantalla, world.exit_tile)
+
                 enemies.update()
                 enemies.dibujo(window)
+
+        #rondas
+        if len(lista_enemigos) == 0 and ronda_terminada == False:
+            ronda_terminada = True
+            estado = "ronda_completada"
+            print(f"Ronda {ronda} completada")
+
+        if player.exp >= player.exp_max:
+            estado = "level_up"
         
         #Arma
         bala = pistola.update(player)
@@ -263,13 +314,19 @@ while run:
             if dmg:
                 dmg_txt = DamageText(pos_dmg.centerx, pos_dmg.centery, str(dmg), font, consts.COLOR_FONT_DMG)
                 grupo_dmg_text.add(dmg_txt)
+
+        grupo_balas_enemigas.update(posicion_pantalla, player, world.obstaculos_tiles)
+        grupo_balas_enemigas.draw(window)
         
         #Txt
         grupo_dmg_text.update(posicion_pantalla)
         grupo_dmg_text.draw(window)
         dibujar_texto(f"Score : {player.score}", font, consts.COLOR_TEXTO_SCORE, 690, 5)
         dibujar_texto(f"Nivel: " + str(nivel), font, consts.BLANCO, consts.ANCHO_VENTANA / 2, 5)
-
+        dibujar_texto(f"Exp: {player.exp}/{player.exp_max}", font, consts.BLANCO, 10, 50)
+        dibujar_texto(f"Level: {player.nivel}", font, consts.BLANCO, 10, 80)
+        dibujar_texto(f"Escudo: {player.escudo}", font, consts.BLANCO, 10, 110)
+        dibujar_texto(f"Ronda: {ronda}", font, consts.BLANCO, 350, 35)
 
         #Items
         grupo_items.update(posicion_pantalla, player)
@@ -279,8 +336,9 @@ while run:
     if nivel_completado == True:
         if nivel < consts.MAX_LVL:
             nivel += 1
+            grupo_balas_enemigas.empty()
             world_data = resetear_mundo()
-            with open(f"niveles//nivel_{nivel}.csv", newline= '') as csvfile:    
+            with open(ruta("niveles", f"nivel_{nivel}.csv"), newline='') as csvfile:   
                 reader = csv.reader(csvfile, delimiter=',')
                 for x, fila in enumerate(reader):
                     for y, columna in enumerate(fila):
@@ -295,6 +353,31 @@ while run:
             for item in world.lista_item:
                 grupo_items.add(item)
 
+
+    if estado == "level_up":
+        pygame.draw.rect(window, (40, 40, 40), (150, 100, 500, 400))
+
+        titulo = font.render("Subiste de Nivel", True, consts.BLANCO)
+
+        op1 = font.render("1 - +1 Corazon", True, consts.BLANCO)
+        op2 = font.render("2 - +5 de Daño", True, consts.BLANCO)
+        op3 = font.render("3 - +1 de Velocidad", True, consts.BLANCO)
+        op4 = font.render("4 - +Vel. Ataque", True, consts.BLANCO)
+
+        window.blit(titulo, (260, 140))
+        window.blit(op1, (250, 220))
+        window.blit(op2, (250, 280))
+        window.blit(op3, (250, 340))
+        window.blit(op4, (250, 400))
+
+    if estado == "ronda_completada":
+        pygame.draw.rect(window, (40, 40, 40), (150, 100, 500, 250))
+
+        txt1 = font.render("Ronda Completada", True, consts.BLANCO)
+        txt2 = font.render("Enter para continuar", True, consts.BLANCO)
+
+        window.blit(txt1, (250, 180))
+        window.blit(txt2, (220, 260))
 
     if player.vivo == False:
         window.fill(consts.ROJO_OSURO)
@@ -320,6 +403,47 @@ while run:
                 mover_arriba = True
             if event.key == pygame.K_s:
                 mover_abajo = True
+
+            if estado == "level_up":
+
+                mejora_elegida = False
+
+                if event.key == pygame.K_1:
+                    player.energia += 25
+                    mejora_elegida = True
+                elif event.key == pygame.K_2:
+                    player.daño += 5
+                    mejora_elegida = True
+                elif event.key == pygame.K_3:
+                    player.velocidad += 1
+                    mejora_elegida = True
+                elif event.key == pygame.K_4:
+                    player.cooldown_disparo -= 50
+                    if player.cooldown_disparo < 100:
+                        player.cooldown_disparo = 100
+                    mejora_elegida = True
+
+                if mejora_elegida:
+                    player.nivel += 1
+                    player.exp = 0
+                    player.exp_max += 5
+                    estado = "jugando"
+            
+            if estado == "ronda_completada":
+                if event.key == pygame.K_RETURN:
+                    if ronda < MAX_RONDAS:
+                        ronda += 1
+                        cantidad = ronda * 4
+                        generar_enemigos_ronda(cantidad)
+
+                        ronda_terminada = False
+                        estado = "jugando"
+                        print(f"Comienza ronda {ronda}")
+
+                    else:
+                        estado = "victoria"
+                        print("ganaste")
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 mover_izquierda = False
@@ -337,9 +461,10 @@ while run:
                 player.vivo = True
                 player.enemigos = 100
                 player.score = 0
+                grupo_balas_enemigas.empty()
                 nivel = 1
                 world_data = resetear_mundo()
-                with open(f"niveles//nivel_{nivel}.csv", newline= '') as csvfile:    
+                with open(ruta("niveles", f"nivel_{nivel}.csv"), newline='') as csvfile:   
                     reader = csv.reader(csvfile, delimiter=',')
                     for x, fila in enumerate(reader):
                         for y, columna in enumerate(fila):
