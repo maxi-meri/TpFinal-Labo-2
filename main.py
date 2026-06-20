@@ -26,6 +26,8 @@ def nombre_carpetas(directorio):
 
 
 pygame.init()
+pygame.mixer.init()
+
 window = pygame.display.set_mode((consts.ANCHO_VENTANA, consts.ALTO_VENTANA))
 pygame.display.set_caption("Mi primer juego")
 
@@ -216,6 +218,12 @@ reloj = pygame.time.Clock()
 
 boton_reinicio = pygame.Rect(consts.ANCHO_VENTANA / 2 - 100, consts.ALTO_VENTANA / 2 + 100, 200, 50)
 
+#Efectos sonido
+pygame.mixer.music.load("assets//sounds//Megalovania.mp3")
+pygame.mixer.music.play(-1)
+sonido_disparo = pygame.mixer.Sound("assets//sounds//Gunshot.wav")
+
+
 mostrar_inicio = True
 run = True
 while run:
@@ -283,6 +291,7 @@ while run:
 
             if bala:
                 grupo_balas.add(bala)
+                sonido_disparo.play()
             
             for bala in grupo_balas:
                 bala.dibujo(window)
