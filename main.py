@@ -174,7 +174,7 @@ def dibujar_grid():
         pygame.draw.line(window, consts.BLANCO, (0, x * consts.TILE_SIZE), (consts.ANCHO_VENTANA, x * consts.TILE_SIZE))
 
 #Jugador Clase Personaje
-player = Personaje(160, 160, animations, consts.ENERGIA_PERSONAJE, 1)
+player = Personaje(460, 460, animations, consts.ENERGIA_PERSONAJE, 1)
 
 #Enemigos Clase Personaje
 #Creacion Manual
@@ -301,6 +301,7 @@ while run:
 
             #Jugador
             posicion_pantalla, nivel_completado = player.movimiento(delta_x, delta_y, world.obstaculos_tiles, world.exit_tile)
+            world.tocar_trampa(player)
             player.update()
             player.dibujo(window)
 
@@ -332,7 +333,7 @@ while run:
             grupo_dmg_text.update(posicion_pantalla)
             grupo_dmg_text.draw(window)
             dibujar_texto(f"Score : {player.score}", font, consts.COLOR_TEXTO_SCORE, 690, 5)
-            dibujar_texto(f"Nivel: " + str(nivel), font, consts.BLANCO, consts.ANCHO_VENTANA / 2, 5)
+            dibujar_texto(f"Sala: " + str(nivel), font, consts.BLANCO, consts.ANCHO_VENTANA / 2, 5)
 
 
             #Items

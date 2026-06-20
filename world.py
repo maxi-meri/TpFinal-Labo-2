@@ -5,6 +5,7 @@ from character import Personaje
 
 obstaculos = [16, 17, 18, 31, 32, 33, 46, 47, 48, 140, 163, 178]
 puerta_cerrada = [163, 178]
+trampas = [166, 167, 211, 212, 213, 214, 215, 216, 232, 233, 234, 235, 236, 237]
 
 class World():
     def __init__(self):
@@ -14,6 +15,7 @@ class World():
         self.lista_item = []
         self.lista_enemigos = []
         self.puerta_cerrada_tile = []
+        self.trampas_tiles = []
     
     def process_data(self, data, tiles_list, item_imgs, animations_enemies):
         self.level_length = len(data)
@@ -28,6 +30,10 @@ class World():
                 #Bounds
                 if tile in obstaculos:
                     self.obstaculos_tiles.append(tile_data)
+                #Trampas
+                if tile in trampas:
+                    print("Trampa encontrada", tile)
+                    self.trampas_tiles.append(tile_data)
                 #Puerta
                 if tile in puerta_cerrada:
                     self.puerta_cerrada_tile.append(tile_data)
@@ -74,7 +80,15 @@ class World():
                     if tile_data in self.obstaculos_tiles:
                         self.obstaculos_tiles.remove(tile_data)
                     return True
-        return False        
+        return False     
+
+    def tocar_trampa(self, player):
+        for tile in self.trampas_tiles:
+            if player.shape.colliderect(tile[1]):
+                player.energia = 0
+                player.vivo = False
+                return True
+        return False
 
     def update(self, posicion_pantalla):
         for tile in self.map_tiles:
@@ -85,5 +99,3 @@ class World():
     def draw(self, surface):
         for tile in self.map_tiles:
             surface.blit(tile[0], tile[1])
-
-    
