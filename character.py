@@ -20,7 +20,7 @@ class Personaje():
         self.exp = 0
         self.exp_max = 10
         self.nivel = 1
-        self.daño = 40
+        self.daño = 300
         self.velocidad = consts.VELOCIDAD_PERSONAJE
         self.cooldown_disparo = consts.COOLDOWN_BULLETS
         self.escudo = 0

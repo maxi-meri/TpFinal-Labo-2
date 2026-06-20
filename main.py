@@ -219,6 +219,35 @@ boton_reinicio = pygame.Rect(consts.ANCHO_VENTANA / 2 - 100, consts.ALTO_VENTANA
 
 estado = "jugando"
 
+def carga_mapa(numero_nivel):
+    global world, world_data, lista_enemigos, posicion_pantalla
+
+    grupo_balas.empty()
+    grupo_balas_enemigas.empty()
+    grupo_dmg_text.empty()
+    grupo_items.empty()
+
+    posicion_pantalla = [0, 0]
+    world_data = resetear_mundo()
+
+    with open(ruta("niveles", f"nivel_{numero_nivel}.csv"), newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        for x, fila in enumerate(reader):
+            for y, columna in enumerate(fila):
+                world_data[x][y] = int(columna)
+
+    world = World()
+    world.process_data(world_data, tile_list, items_imgs, animations_enemies)
+
+    player.actualizar_coordenadas(consts.COORDENADAS[str(numero_nivel)])
+
+    lista_enemigos = []
+    for enemy in world.lista_enemigos:
+        lista_enemigos.append(enemy)
+    
+    for item in world.lista_item:
+        grupo_items.add(item)
+
 def generar_enemigos_ronda(cantidad):
     for i in range(cantidad):
         x = random.randint(200, consts.ANCHO_VENTANA - 200)
@@ -433,6 +462,14 @@ while run:
                 if event.key == pygame.K_RETURN:
                     if ronda < MAX_RONDAS:
                         ronda += 1
+                        
+                        if ronda == 4:
+                            nivel = 2
+                            carga_mapa(nivel)
+                        elif ronda == 7:
+                            nivel = 3
+                            carga_mapa(nivel)
+                        
                         cantidad = ronda * 4
                         generar_enemigos_ronda(cantidad)
 
