@@ -41,8 +41,8 @@ font_game_over = pygame.font.Font("assets//fonts//BLOODY.TTF", consts.FONT_SIZE*
 font_reinicio = pygame.font.Font("assets//fonts//Minecraft.ttf", consts.FONT_SIZE)
 font_titulo = pygame.font.Font("assets//fonts//Ghost.ttf", consts.FONT_SIZE*2)
 
-game_over_text = font_game_over.render("Game Over", True, consts.BLANCO)
-texto_boton_reinicio = font_reinicio.render("Reiniciar", True, consts.NEGRO)
+game_over_text = font_game_over.render("Game Over", True, consts.ROJO_OSURO)
+texto_boton_reinicio = font_reinicio.render("Reiniciar", True, consts.BLANCO)
 
 #Menu Inicio
 boton_jugar = pygame.Rect(consts.ANCHO_VENTANA / 2 - 100, consts.ALTO_VENTANA / 2 - 50, 200, 50)
@@ -386,11 +386,11 @@ while run:
 
 
         if player.vivo == False:
-            window.fill(consts.BLUE)
+            window.fill(consts.BLUE_RED)
             text_rect = game_over_text.get_rect(center=(consts.ANCHO_VENTANA/2, consts.ALTO_VENTANA/2))
             window.blit(game_over_text, text_rect)
 
-            pygame.draw.rect(window, consts.AMARILLO, boton_reinicio)
+            pygame.draw.rect(window, consts.VERDE_SLIME, boton_reinicio)
             window.blit(texto_boton_reinicio, (boton_reinicio.x + 50, boton_reinicio.y + 10))
 
         for event in pygame.event.get():
@@ -412,6 +412,8 @@ while run:
                 if event.key == pygame.K_e:
                     if world.abrir_puerta(player, tile_list):
                         print("Puerta abierta")
+                    if world.abrir_cofre(player, tile_list):
+                        print("Cofre trampa")
                 if event.key == pygame.K_p:
                     pausa = not pausa
                     mover_abajo = False

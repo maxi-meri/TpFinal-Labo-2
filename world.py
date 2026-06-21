@@ -6,6 +6,7 @@ from character import Personaje
 obstaculos = [16, 17, 18, 31, 32, 33, 35, 46, 47, 48, 140, 163, 178]
 puerta_cerrada = [163, 178]
 trampas = [166, 167, 211, 212, 213, 214, 215, 216, 232, 233, 234, 235, 236, 237]
+cofre = [147]
 
 class World():
     def __init__(self):
@@ -55,12 +56,12 @@ class World():
                     tile_data[0] = tiles_list[116]
                 #Hongo
                 elif tile == 200:
-                    hongo = Personaje(image_x, image_y, animations_enemies[1], 200, 2)
+                    hongo = Personaje(image_x, image_y, animations_enemies[1], consts.ENERGIA_HONGOS, 2)
                     self.lista_enemigos.append(hongo)
                     tile_data[0] = tiles_list[116]
                 #Goblin
                 elif tile == 188:
-                    goblin = Personaje(image_x, image_y, animations_enemies[0], 300, 2)
+                    goblin = Personaje(image_x, image_y, animations_enemies[0], consts.ENERGIA_GOBLINS, 2)
                     self.lista_enemigos.append(goblin)
                     tile_data[0] = tiles_list[116]
                 self.map_tiles.append(tile_data)
@@ -84,6 +85,20 @@ class World():
                         self.obstaculos_tiles.remove(tile_data)
                     return True
         return False     
+    
+    def abrir_cofre(self, player, tile_list):
+        buffer = 50
+        proximidad_rect = pygame.Rect(player.shape.x - buffer, player.shape.y - buffer, player.shape.width + buffer * 2, player.shape.height + buffer * 2)
+        for tile_data in self.map_tiles:
+            if tile_data[4] == 147:
+                if proximidad_rect.colliderect(tile_data[1]):
+                    tile_data[4] = 148
+                    tile_data[0] = tile_list[148]
+                    #Matar Jugador
+                    player.energia = 0
+                    player.vivo = False
+                    return True
+        return False
 
     def tocar_trampa(self, player):
         for tile in self.trampas_tiles:
