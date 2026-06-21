@@ -186,7 +186,7 @@ def dibujar_grid():
         pygame.draw.line(window, consts.BLANCO, (0, x * consts.TILE_SIZE), (consts.ANCHO_VENTANA, x * consts.TILE_SIZE))
 
 #Jugador Clase Personaje
-player = Personaje(160, 160, animations, consts.ENERGIA_PERSONAJE, 1)
+player = Personaje(450, 350, animations, consts.ENERGIA_PERSONAJE, 1)
 
 #Enemigos Clase Personaje
 #Creacion Manual
@@ -264,41 +264,53 @@ def carga_mapa(numero_nivel):
 
 #cantidad de enemigos
 def enemigos_ronda(ronda):
-    return 18 + (ronda - 1) * 3
+    return 7 + (ronda - 1) * 3
 
 spawn_por_nivel = {
     1: [
-        (250, 180), (450, 180), (650, 180),
-        (250, 350), (450, 350), (650, 350)
+        (658, 370), (628, 72), (680, 460),
+        (125, 417), (273, 186), (301, 81),
+        (75, 278), (340, 118), (323, 200),
+        (722, 201), (230, 198)
     ],
 
     2: [
-        (300, 180), (500, 180), (700, 180),
-        (300, 350), (500, 350), (700, 350)
+        (378, 123), (556, 135), (581, 454),
+        (172, 305), (595, 334), (102, 312),
+        (119, 443), (353, 339), (389, 232),
+        (194, 161), (636, 166), (745, 178),
+        (327, 124), (504, 143), (694, 448)
     ],
 
    3: [
-        (260, 230), (420, 230), (560, 230),
-        (260, 460), (420, 460), (560, 460)
+        (120, 300), (130, 430), (220, 430),
+        (500, 180), (620, 180), (700, 250),
+        (520, 420), (650, 420), (720, 380)
     ]
 }
 #generacion de enemigos
 def generar_enemigos_ronda(cantidad):
     zonas = spawn_por_nivel[nivel]
+    enemigos_creados = 0
+    intentos = 0
 
-    for i in range(cantidad):
+    while enemigos_creados < cantidad and intentos < cantidad * 50:
+        intentos += 1
 
-        x, y = zonas[i % len(zonas)]
+        x, y = zonas[intentos % len(zonas)]
 
-        vuelta = i // len(zonas)
+        x += random.randint(-10, 10)
+        y += random.randint(-10, 10)
 
-        x += random.randint(-20, 20) + vuelta * 35
-        y += random.randint(-20, 20) + vuelta * 25
+        # evitar que aparezcan cerca del jugador
+        distancia_jugador = ((x - player.shape.centerx) ** 2 + (y - player.shape.centery) ** 2) ** 0.5
+        if distancia_jugador < 180:
+            continue
 
+        # evitar paredes
         rect_spawn = pygame.Rect(x - 20, y - 20, 40, 40)
 
         colisiona = False
-
         for obstaculo in world.obstaculos_tiles:
             if rect_spawn.colliderect(obstaculo[1]):
                 colisiona = True
@@ -310,23 +322,12 @@ def generar_enemigos_ronda(cantidad):
         numero = random.randint(1, 100)
 
         if numero <= 66:
-            enemigo = Personaje(
-                x,
-                y,
-                animations_enemies[0],
-                100 + ronda * 20,
-                2
-            )
+            enemigo = Personaje(x, y, animations_enemies[0], 100 + ronda * 20, 2)
         else:
-            enemigo = EnemigoDisparo(
-                x,
-                y,
-                animations_enemies[1],
-                80 + ronda * 15,
-                3
-            )
+            enemigo = EnemigoDisparo(x, y, animations_enemies[1], 80 + ronda * 15, 3)
 
         lista_enemigos.append(enemigo)
+        enemigos_creados += 1
 
 run = True
 while run:
@@ -587,7 +588,9 @@ while run:
                         print("Puerta abierta")
                 else:
                     print("La salida esta Bloqueada")
+                    
         if event.type == pygame.MOUSEBUTTONDOWN:
+            #print(pygame.mouse.get_pos())
             if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                 player.vivo = True
                 player.enemigos = 100
