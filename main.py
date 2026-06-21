@@ -627,7 +627,7 @@ while run:
                     print("La salida esta Bloqueada")
                     
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print(pygame.mouse.get_pos())
+            #print(pygame.mouse.get_pos())
             if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                 player.vivo = True
                 player.enemigos = 100
