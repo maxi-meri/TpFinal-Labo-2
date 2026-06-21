@@ -282,10 +282,15 @@ spawn_por_nivel = {
         (327, 124), (504, 143), (694, 448)
     ],
 
-   3: [
+    3: [
         (120, 300), (130, 430), (220, 430),
         (500, 180), (620, 180), (700, 250),
         (520, 420), (650, 420), (720, 380)
+    ],
+
+    4: [
+        (250, 200), (450, 200), (650, 200),
+        (250, 400), (450, 400), (650, 400)
     ]
 }
 #generacion de enemigos
@@ -432,17 +437,32 @@ while run:
     if nivel_completado == True and salida_desbloqueada == True:
         if nivel < consts.MAX_LVL:
             nivel += 1
-
             carga_mapa(nivel)
 
             salida_desbloqueada = False
-            ronda_terminada = False
             nivel_completado = False
 
+            cantidad = enemigos_ronda(ronda)
+            generar_enemigos_ronda(ronda)
+
+            ronda_terminada = False
+
             print(f"Cambiando al nivel {nivel}")
+            print("enemigos generados:", len(lista_enemigos))
 
     if estado == "level_up":
-        pygame.draw.rect(window, (40, 40, 40), (150, 100, 500, 400))
+        world.draw(window)
+        vida_player()
+        player.dibujo(window)
+        grupo_items.draw(window)
+
+        overlay_fondo = pygame.Surface((consts.ANCHO_VENTANA, consts.ALTO_VENTANA), pygame.SRCALPHA)
+        overlay_fondo.fill((0, 0, 0, 130))
+        window.blit(overlay_fondo, (0, 0))
+
+        overlay = pygame.Surface((500, 400), pygame.SRCALPHA)
+        overlay.fill((40, 40, 40, 180))
+        window.blit(overlay, (150, 100))
 
         titulo = font.render("Subiste de Nivel", True, consts.BLANCO)
 
@@ -458,13 +478,30 @@ while run:
         window.blit(op4, (250, 400))
 
     if estado == "ronda_completada":
-        pygame.draw.rect(window, (40, 40, 40), (150, 100, 500, 250))
+        world.draw(window)
+        vida_player()
+        player.dibujo(window)
+        grupo_items.draw(window)
+
+        # Capa oscura transparente
+        overlay = pygame.Surface((consts.ANCHO_VENTANA, consts.ALTO_VENTANA), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 130))
+        window.blit(overlay, (0, 0))
+
+        # Panel transparente
+        panel = pygame.Surface((520, 230), pygame.SRCALPHA)
+        panel.fill((30, 30, 30, 180))
+        panel_rect = panel.get_rect(center=(consts.ANCHO_VENTANA // 2, consts.ALTO_VENTANA // 2))
+        window.blit(panel, panel_rect)
 
         txt1 = font.render("Ronda Completada", True, consts.BLANCO)
         txt2 = font.render("Enter para continuar", True, consts.BLANCO)
 
-        window.blit(txt1, (250, 180))
-        window.blit(txt2, (220, 260))
+        txt1_rect = txt1.get_rect(center=(consts.ANCHO_VENTANA // 2, consts.ALTO_VENTANA // 2 - 40))
+        txt2_rect = txt2.get_rect(center=(consts.ANCHO_VENTANA // 2, consts.ALTO_VENTANA // 2 + 35))
+
+        window.blit(txt1, txt1_rect)
+        window.blit(txt2, txt2_rect)
     
     if estado == "victoria":
         window.fill((20, 20, 20))
@@ -556,7 +593,7 @@ while run:
                     if ronda < MAX_RONDAS:
                         ronda += 1
                         
-                        if ronda == 4 or ronda == 7:
+                        if ronda == 4 or ronda == 7 or ronda == 10:
                             salida_desbloqueada = True
                             ronda_terminada = True
                             estado = "jugando"
@@ -590,7 +627,7 @@ while run:
                     print("La salida esta Bloqueada")
                     
         if event.type == pygame.MOUSEBUTTONDOWN:
-            #print(pygame.mouse.get_pos())
+            print(pygame.mouse.get_pos())
             if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                 player.vivo = True
                 player.enemigos = 100
