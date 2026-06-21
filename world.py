@@ -3,7 +3,7 @@ import pygame
 from items import Item
 from character import Personaje
 
-obstaculos = [16, 17, 18, 31, 32, 33, 46, 47, 48, 140, 163, 178]
+obstaculos = [16, 17, 18, 31, 32, 33, 35, 46, 47, 48, 140, 163, 178]
 puerta_cerrada = [163, 178]
 trampas = [166, 167, 211, 212, 213, 214, 215, 216, 232, 233, 234, 235, 236, 237]
 
@@ -16,6 +16,7 @@ class World():
         self.lista_enemigos = []
         self.puerta_cerrada_tile = []
         self.trampas_tiles = []
+        self.final_tile = None
     
     def process_data(self, data, tiles_list, item_imgs, animations_enemies):
         self.level_length = len(data)
@@ -32,7 +33,6 @@ class World():
                     self.obstaculos_tiles.append(tile_data)
                 #Trampas
                 if tile in trampas:
-                    print("Trampa encontrada", tile)
                     self.trampas_tiles.append(tile_data)
                 #Puerta
                 if tile in puerta_cerrada:
@@ -40,6 +40,9 @@ class World():
                 #Salida
                 elif tile == 155:
                     self.exit_tile = tile_data
+                #Easter Egg
+                elif tile == 55:
+                    self.final_tile = tile_data
                 #Coins
                 elif tile == 190:
                     coin = Item(image_x, image_y, 0, item_imgs[0])

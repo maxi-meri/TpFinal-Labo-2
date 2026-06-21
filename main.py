@@ -174,7 +174,7 @@ def dibujar_grid():
         pygame.draw.line(window, consts.BLANCO, (0, x * consts.TILE_SIZE), (consts.ANCHO_VENTANA, x * consts.TILE_SIZE))
 
 #Jugador Clase Personaje
-player = Personaje(460, 460, animations, consts.ENERGIA_PERSONAJE, 1)
+player = Personaje(950, 170, animations, consts.ENERGIA_PERSONAJE, 1)
 
 #Enemigos Clase Personaje
 #Creacion Manual
@@ -301,6 +301,30 @@ while run:
 
             #Jugador
             posicion_pantalla, nivel_completado = player.movimiento(delta_x, delta_y, world.obstaculos_tiles, world.exit_tile)
+            if world.final_tile and player.shape.colliderect(world.final_tile[1]):
+                nivel = consts.MAX_LVL
+
+                world_data = resetear_mundo()
+
+                with open(f"niveles//nivel_{nivel}.csv", newline='') as csvfile:
+                    reader = csv.reader(csvfile, delimiter=',')
+                    for x, fila in enumerate(reader):
+                        for y, columna in enumerate(fila):
+                            world_data[x][y] = int(columna)
+
+                world = World()
+                world.process_data(world_data, tile_list, items_imgs, animations_enemies)
+
+                player.actualizar_coordenadas(consts.COORDENADAS[str(nivel)])
+
+                lista_enemigos = []
+                for enemies in world.lista_enemigos:
+                    lista_enemigos.append(enemies)
+
+                grupo_items.empty()
+                for item in world.lista_item:
+                    grupo_items.add(item)
+                
             world.tocar_trampa(player)
             player.update()
             player.dibujo(window)

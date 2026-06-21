@@ -81,7 +81,7 @@ class Bullet(pygame.sprite.Sprite):
         #Colision Enemigos
         for enemigo in lista_enemigos:
             if enemigo.shape.colliderect(self.rect):
-                dmg = 35 + random.randint(-7, 7)
+                dmg = 50 + random.randint(-7, 7)
                 pos_dmg = enemigo.shape
                 enemigo.energia = enemigo.energia - dmg
                 self.kill()
