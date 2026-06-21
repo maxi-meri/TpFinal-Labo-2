@@ -36,6 +36,9 @@ class Item(pygame.sprite.Sprite):
             elif self.item_type == 2:
                 personaje.escudo += 25
 
+                if personaje.escudo > 100:
+                    personaje.escudo = 100
+
             self.kill()
 
         # Animaciones

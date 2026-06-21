@@ -43,6 +43,7 @@ nivel = 1
 #rondas
 ronda = 1
 MAX_RONDAS = 10
+salida_desbloqueada = False
 ronda_terminada = False
 
 #Fonts
@@ -122,6 +123,21 @@ items_imgs = [coin_images, [imagen_posion]]
 def dibujar_texto(texto, fuente, color, x, y):
     img = fuente.render(texto, True, color)
     window.blit(img, (x, y))
+
+def dibujar_barra(x, y, ancho, alto, valor, maximo, color, texto):
+    porcentaje = valor / maximo
+
+    if porcentaje > 1:
+        porcentaje = 1
+    if porcentaje < 0:
+        porcentaje = 0
+
+    fondo = pygame.Rect(x, y, ancho, alto)
+    relleno = pygame.Rect(x, y, ancho * porcentaje, alto)
+
+    pygame.draw.rect(window, (30, 30, 30), fondo, border_radius=10)
+    pygame.draw.rect(window, color, relleno, border_radius=10)
+    pygame.draw.rect(window, consts.BLANCO, fondo, 2, border_radius=10)
 
 #Energia/Vida
 def vida_player():
@@ -242,23 +258,73 @@ def carga_mapa(numero_nivel):
     player.actualizar_coordenadas(consts.COORDENADAS[str(numero_nivel)])
 
     lista_enemigos = []
-    for enemy in world.lista_enemigos:
-        lista_enemigos.append(enemy)
     
     for item in world.lista_item:
         grupo_items.add(item)
 
+#cantidad de enemigos
+def enemigos_ronda(ronda):
+    return 18 + (ronda - 1) * 3
+
+spawn_por_nivel = {
+    1: [
+        (250, 180), (450, 180), (650, 180),
+        (250, 350), (450, 350), (650, 350)
+    ],
+
+    2: [
+        (300, 180), (500, 180), (700, 180),
+        (300, 350), (500, 350), (700, 350)
+    ],
+
+   3: [
+        (260, 230), (420, 230), (560, 230),
+        (260, 460), (420, 460), (560, 460)
+    ]
+}
+#generacion de enemigos
 def generar_enemigos_ronda(cantidad):
+    zonas = spawn_por_nivel[nivel]
+
     for i in range(cantidad):
-        x = random.randint(200, consts.ANCHO_VENTANA - 200)
-        y = random.randint(150, consts.ALTO_VENTANA - 150)
+
+        x, y = zonas[i % len(zonas)]
+
+        vuelta = i // len(zonas)
+
+        x += random.randint(-20, 20) + vuelta * 35
+        y += random.randint(-20, 20) + vuelta * 25
+
+        rect_spawn = pygame.Rect(x - 20, y - 20, 40, 40)
+
+        colisiona = False
+
+        for obstaculo in world.obstaculos_tiles:
+            if rect_spawn.colliderect(obstaculo[1]):
+                colisiona = True
+                break
+
+        if colisiona:
+            continue
 
         numero = random.randint(1, 100)
 
         if numero <= 66:
-            enemigo = Personaje(x, y, animations_enemies[0], 100 + ronda * 20, 2)
+            enemigo = Personaje(
+                x,
+                y,
+                animations_enemies[0],
+                100 + ronda * 20,
+                2
+            )
         else:
-            enemigo = EnemigoDisparo(x, y, animations_enemies[1], 80 + ronda * 15, 3)
+            enemigo = EnemigoDisparo(
+                x,
+                y,
+                animations_enemies[1],
+                80 + ronda * 15,
+                3
+            )
 
         lista_enemigos.append(enemigo)
 
@@ -351,37 +417,28 @@ while run:
         grupo_dmg_text.update(posicion_pantalla)
         grupo_dmg_text.draw(window)
         dibujar_texto(f"Score : {player.score}", font, consts.COLOR_TEXTO_SCORE, 690, 5)
-        dibujar_texto(f"Nivel: " + str(nivel), font, consts.BLANCO, consts.ANCHO_VENTANA / 2, 5)
-        dibujar_texto(f"Exp: {player.exp}/{player.exp_max}", font, consts.BLANCO, 10, 50)
-        dibujar_texto(f"Level: {player.nivel}", font, consts.BLANCO, 10, 80)
-        dibujar_texto(f"Escudo: {player.escudo}", font, consts.BLANCO, 10, 110)
-        dibujar_texto(f"Ronda: {ronda}", font, consts.BLANCO, 350, 35)
+        dibujar_texto(f"Sala: " + str(nivel), font, consts.BLANCO, consts.ANCHO_VENTANA / 2, 5)
+        dibujar_texto(f"lvl: {player.nivel}", font, consts.BLANCO, 10, 28)
+
+        dibujar_barra(10, 50, 220, 24, player.exp, player.exp_max, (0, 200, 80), f"EXP {player.exp}/{player.exp_max}")
+        dibujar_barra(10, 85, 220, 24, player.escudo, 100, (0, 150, 255), f"ESCUDO {player.escudo}/100")
 
         #Items
         grupo_items.update(posicion_pantalla, player)
         grupo_items.draw(window)
 
     #Nivel completo
-    if nivel_completado == True:
+    if nivel_completado == True and salida_desbloqueada == True:
         if nivel < consts.MAX_LVL:
             nivel += 1
-            grupo_balas_enemigas.empty()
-            world_data = resetear_mundo()
-            with open(ruta("niveles", f"nivel_{nivel}.csv"), newline='') as csvfile:   
-                reader = csv.reader(csvfile, delimiter=',')
-                for x, fila in enumerate(reader):
-                    for y, columna in enumerate(fila):
-                        world_data[x][y] = int(columna)
-            world = World()
-            world.process_data(world_data, tile_list, items_imgs, animations_enemies)
-            player.actualizar_coordenadas(consts.COORDENADAS[str(nivel)])
 
-            lista_enemigos = []
-            for enemies in world.lista_enemigos:
-                lista_enemigos.append(enemies)
-            for item in world.lista_item:
-                grupo_items.add(item)
+            carga_mapa(nivel)
 
+            salida_desbloqueada = False
+            ronda_terminada = False
+            nivel_completado = False
+
+            print(f"Cambiando al nivel {nivel}")
 
     if estado == "level_up":
         pygame.draw.rect(window, (40, 40, 40), (150, 100, 500, 400))
@@ -407,6 +464,19 @@ while run:
 
         window.blit(txt1, (250, 180))
         window.blit(txt2, (220, 260))
+    
+    if estado == "victoria":
+        window.fill((20, 20, 20))
+
+        texto_victoria = font_game_over.render("GANASTE", True, consts.AMARILLO)
+        texto_reinicio = font.render("R = Reiniciar", True, consts.BLANCO)
+        texto_salir = font.render("ESC = Salir", True, consts.BLANCO)
+
+        rect_victoria = texto_victoria.get_rect(center=(consts.ANCHO_VENTANA // 2, consts.ALTO_VENTANA // 2 - 80))
+
+        window.blit(texto_victoria, rect_victoria)
+        window.blit(texto_reinicio, (consts.ANCHO_VENTANA // 2 - 90, 330))
+        window.blit(texto_salir, (consts.ANCHO_VENTANA // 2 - 70, 370))
 
     if player.vivo == False:
         window.fill(consts.ROJO_OSURO)
@@ -457,29 +527,50 @@ while run:
                     player.exp = 0
                     player.exp_max += 5
                     estado = "jugando"
+
+            if estado == "victoria":
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+
+                if event.key == pygame.K_r:
+                    player = Personaje(160, 160, animations, consts.ENERGIA_PERSONAJE, 1)
+                    pistola = Weapon(imagen_pistola, imagen_balas)
+
+                    nivel = 1
+                    ronda = 1
+                    salida_desbloqueada = False
+                    ronda_terminada = False
+                    estado = "jugando"
+
+                    grupo_balas.empty()
+                    grupo_balas_enemigas.empty()
+                    grupo_dmg_text.empty()
+                    grupo_items.empty()
+
+                    carga_mapa(nivel)
+
             
             if estado == "ronda_completada":
                 if event.key == pygame.K_RETURN:
                     if ronda < MAX_RONDAS:
                         ronda += 1
                         
-                        if ronda == 4:
-                            nivel = 2
-                            carga_mapa(nivel)
-                        elif ronda == 7:
-                            nivel = 3
-                            carga_mapa(nivel)
-                        
-                        cantidad = ronda * 4
-                        generar_enemigos_ronda(cantidad)
+                        if ronda == 4 or ronda == 7:
+                            salida_desbloqueada = True
+                            ronda_terminada = True
+                            estado = "jugando"
+                            print("Salida Desbloqueada")
+                        else:
+                            cantidad = enemigos_ronda(ronda)
+                            generar_enemigos_ronda(cantidad)
+                            print("enemigos generados:", len(lista_enemigos))
 
-                        ronda_terminada = False
-                        estado = "jugando"
-                        print(f"Comienza ronda {ronda}")
-
+                            ronda_terminada = False
+                            estado = "jugando"
+                        print(f"Comienza Ronda {ronda}")
                     else:
                         estado = "victoria"
-                        print("ganaste")
+                        print("Ganaste")
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -491,8 +582,11 @@ while run:
             if event.key == pygame.K_s:
                 mover_abajo = False
             if event.key == pygame.K_e:
-                if world.abrir_puerta(player, tile_list):
-                    print("Puerta abierta")
+                if salida_desbloqueada:
+                    if world.abrir_puerta(player, tile_list):
+                        print("Puerta abierta")
+                else:
+                    print("La salida esta Bloqueada")
         if event.type == pygame.MOUSEBUTTONDOWN:
             if boton_reinicio.collidepoint(event.pos) and not player.vivo:
                 player.vivo = True
@@ -500,6 +594,8 @@ while run:
                 player.score = 0
                 grupo_balas_enemigas.empty()
                 nivel = 1
+                salida_desbloqueada = False
+                ronda_terminada = False
                 world_data = resetear_mundo()
                 with open(ruta("niveles", f"nivel_{nivel}.csv"), newline='') as csvfile:   
                     reader = csv.reader(csvfile, delimiter=',')
