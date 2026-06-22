@@ -98,22 +98,6 @@ Cada sala posee una distribución distinta y diferentes puntos de aparición par
 
 ---
 
-## Cómo ejecutar el juego
-
-Instalar Pygame:
-
-```bash
-pip install pygame
-```
-
-Ejecutar el archivo principal:
-
-```bash
-python main.py
-```
-
----
-
 ## Estructura del proyecto
 
 - `main.py` → Lógica principal del juego.
