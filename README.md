@@ -44,7 +44,7 @@ El objetivo es llegar hasta la última sala y completar la ronda final para gana
 | S | Mover abajo |
 | D | Mover derecha |
 | Click Izquierdo | Disparar |
-| E | Abrir puerta |
+| E | Interaccion con el mapa |
 | Enter | Continuar a la siguiente ronda |
 | 1 - 4 | Elegir mejora al subir de nivel |
 | R | Reiniciar partida |
