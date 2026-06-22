@@ -1,4 +1,5 @@
 import pygame
+import random
 from character import Personaje
 
 
@@ -33,9 +34,6 @@ class FinalBoss(Personaje):
 
 
     def invocar_enemigos(self, lista_enemigos, animations_enemies):
-        import random
-        from character import Personaje
-
         for i in range(15):
 
             x = random.randint(100, 700)
