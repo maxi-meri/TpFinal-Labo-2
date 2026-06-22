@@ -4,7 +4,7 @@
 
 - Lucas Viña
 - Nicolás Olivares
-- Matias Gebecke
+- Matias Nicolas Gebecke
 
 ---
 
